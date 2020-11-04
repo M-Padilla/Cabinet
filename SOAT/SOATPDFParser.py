@@ -37,7 +37,7 @@ policy_offset={"AXA COLPATRIA": (0,5),
 pytesseract.pytesseract.tesseract_cmd = 'D:/Programas/anaconda3/pkgs/tesseract-4.1.1-h1fd39ab_3/Library/bin/tesseract.exe'
 
 # Convert to .jpeg image file.
-images_from_path = convert_from_path("C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT CARDENAS.pdf",
+images_from_path = convert_from_path("C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT.pdf",
                                          fmt="jpeg",
                                          dpi=400,
                                          single_file=True)
@@ -62,7 +62,7 @@ for image in images_from_path:
     
     #Numpy array containing all regions of interest, cropped from open_cv_image.
     #(x,y,w,h)  
-    fields= np.array([[2000,1150,925,120],
+    field_boxes = np.array([[2000,1150,925,120],
                     [940,1350,845,120],
                     [1705,1960,555,435],
                     [2300,1940,220,450],
@@ -94,6 +94,9 @@ for image in images_from_path:
                     [870,950,590,120],
                     [1800,1350,845,120]])    
     
+    if insurer_name == "SURA":
+        field_boxes[28] = np.array([295,2070,445,70])
+   
     
     #Dictionary containing the fields index row belonging to each policy field.
     fields_dict = {"body": 0,
@@ -127,6 +130,18 @@ for image in images_from_path:
             "total_premium": 28,
             "vehicle_class": 29,
             "vin": 30}
+    
+    #Calculate absolute coordinates for field boxes.
+    field_boxes = box_construction(field_boxes)
+    
+    #Get image bits belonging to each field and apply OCR
+    for key in field_dict.keys():
+        field_dict[key] = field_boxes[field_dict[key]]
+        img = open_cv_image[field_dict[key][1] : field_dict[key][3],
+                           field_dict[key][0] : field_dict[key][2]]
+        field_dict[key] = str(pytesseract.image_to_string(img, config='--psm 11'))
+    
+    print(field_dict)
     
     for image in images_from_path:
       image.close()
