@@ -18,15 +18,6 @@ def box_construction(fields_array):
     fields_array[:,2]+= fields_array[:,0]
     fields_array[:,3]+= fields_array[:,1]
     return fields_array
-    
-#Visualize image
-def test():
-    cv.namedWindow('dmc',cv.WINDOW_NORMAL)
-    cv.resizeWindow('dmc', 900,800)
-    cv.imshow('dmc', drawing)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-    cv.waitKey(1)
 
 
 file= "C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT Patricia.pdf"
