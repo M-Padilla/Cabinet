@@ -1,6 +1,6 @@
 """
 Created on Sat Oct 10 15:25:16 2020
-Modified on Fri Feb 12 02:56 2020
+Modified on Sun Mar 7 21:40 2021
 @author: M.Padilla
 """
 
@@ -16,6 +16,9 @@ import sys
 
 
 def box_construction(xywh_array):
+    '''
+    Turns an array of coordinates (x, y, w, h) into an array of coordinates (x, y, x+w, y+h)
+    '''
     xywh_array[2] += xywh_array[0]
     xywh_array[3] += xywh_array[1]
     return xywh_array
@@ -37,6 +40,7 @@ def file_checker(pdf_doc):
                     single_file=True, userpw=password)
                 break
             except pdf2image.exceptions.PDFPageCountError:
+                # Prompt for password
                 print('LOCKED PDF ERROR: PDF is password protected.')
                 password = getpass.getpass(
                     prompt='Please provide a valid password: ')
@@ -47,10 +51,9 @@ def img_cropper(image_np_array, insurer):
     '''
     Crops image to a delimited box to remove footer and blank spaces in the top and sides.
     '''
-
     # Cropbox's original boundaries (X0,Y0,XF,YF)
     cropbox = (200, -1780, 200, -200)
-    # offsets.json contains offset coordinates (+X,+Y) dictionary for cropbox, customized for each insurer.
+    # offsets.json contains offset coordinates (+X, +Y) dictionary for cropbox, customized for each insurer.
     with open('offsets.json', mode='r') as offsets_f:  # CHANGE NAME OF FILE LATER OR SWITCH TO MAIN CODE AS GLOBAL VARIABLE?
         # Get offset for the specific insurer's form
         offset = json.load(offsets_f)['offsets'].get(insurer, (0, 0))
@@ -75,16 +78,6 @@ def img_preprocessor(image_np_array):
 def insurer_identifier(image_np_array):  # WILL BE IMPLEMENTED
     # TO-DO: PATTERN MATCHING OR OCR FOR INSURER'S LOGO
     return "MUNDIAL"
-
-
-# Visualize image - WILL BE DELETED
-def test():
-    cv.namedWindow('dmc', cv.WINDOW_NORMAL)
-    cv.resizeWindow('dmc', 900, 800)
-    cv.imshow('dmc', drawing)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-    cv.waitKey(1)
 
 
 file = "C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT Mundial.pdf"
@@ -113,22 +106,10 @@ with open('fields.json', mode='r') as fields_f:
 output = {}
 for field in field_boxes.keys():
     field_coords = np.array(field_boxes[field]['coords'].get(insurer, field_boxes[field]['coords']['default']))
-    # Turns an array of coordinates (x,y,w,h) into an array of coordinates (x,y,x+w,y+h)
+    # Turns an array of coordinates (x, y, w, h) into an array of coordinates (x, y, x+w, y+h)
     field_coords = box_construction(field_coords)
-    # Retrieve image corresponding to field coordinates in the following order: (y,y+h,x,x+w)
+    # Retrieve image corresponding to field coordinates in the following order: (y, y+h, x, x+w)
     # Then apply OCR and convert to string
     output[field] = str(pytesseract.image_to_string(
         image[field_coords[1]: field_coords[3], field_coords[0]: field_coords[2]],
-        config=field_boxes[field]['ocr_config_mode'])).upper()
-
-
-'''
-fromCenter = False
-cv.namedWindow('Image',cv.WINDOW_NORMAL)
-cv.resizeWindow('Image', 900,800)
-r = cv.selectROIs("Image", open_cv_image, fromCenter)
-cv.destroyWindow('Image')
-
-for image in images_from_path:
-    image.close()
-'''
+        config=field_boxes[field]['ocr_config_mode'])).strip().upper()
