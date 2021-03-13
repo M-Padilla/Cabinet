@@ -113,8 +113,8 @@ except Exception as err:
     sys.exit()
 
 # Retrieve box coordinates (x, y, w, h) for every field.
-with open('fields.json', mode='r') as fields_f:
-    data = json.load(fields_f)
+with open('config.json', mode='r') as config_f:
+    data = json.load(config_f)
     field_boxes = data["field_boxes"] # Load boxes, psm mode and regex patterns for every field
     insurers_list = data["available_line_insurers"] # Load available insurers for this policy line.
     all_offsets = data["offsets"] # Load necessary offsets for certain insurers
