@@ -1,95 +1,206 @@
-{"field_boxes":
-	{"asegurador": {
-				"coords": {"default": [2465, 0, 480, 530]},
-				"ocr_config_mode": "--psm 7"},
-	"cap_ton": {
-				"coords": {"default": [2665, 1350, 255, 120]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"carroceria": {
-				"coords": {"default": [2000, 1150, 925, 120]},
-				"ocr_config_mode": "--psm 7 --psm 11"},
-	"cilindraje-vatios": {
-				"coords": {"default": [2145, 950, 370, 120]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"ciudad_resid_tomador": {
-				"coords": {"default": [2515, 1540, 410, 120]},
-				"ocr_config_mode": "--psm 7 --psm 11"},
-	"clase_veh": {
-				"coords": {"default": [870, 950, 590, 120]},
-				"ocr_config_mode": "--psm 6"},
-	"coberturas": {
-				"coords": {"default": [1705, 1960, 555,435]},
-				"ocr_config_mode": "--psm 11"},
-	"cod_asegurador": {
-				"coords": {"default": [110, 1740, 540, 120]},
-				"ocr_config_mode": "--psm 7"},
-	"contrib_fosyga": {
-				"coords": {"default": [740, 1960, 440, 110]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"fecha_expedicion": {
-				"coords": {"default": [186, 570, 340, 75]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"fecha_inicio": {
-				"coords": {"default": [640, 570, 325, 75]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"fecha_vencimiento": {
-				"coords": {"default": [1100, 570, 315, 80]},
-			 	"ocr_config_mode": "--psm 7 outputbase digits"},
-	"lim_de_cobertura": {
-				"coords": {"default": [2300, 1940, 220, 450]},
-				"ocr_config_mode": "--psm 11"},
-	"linea_veh": {
-				"coords": {"default": [445, 1185, 1545, 85]},
-				"ocr_config_mode": "--psm 7"},
-	"marca": {
-				"coords": {"default": [445, 1100, 1545, 85]},
-				"ocr_config_mode": "--psm 7"},
-	"modelo": {
-				"coords": {"default": [2530, 950, 390, 120]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"n_doc_tomador": {
-				"coords": {"default": [2085, 1570, 420, 95]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"n_motor": {
-				"coords": {"default": [110, 1350, 810, 115]},
-				"ocr_config_mode": "--psm 7"},
-	"n_poliza": {
-				"coords": {"default": [110, 950, 370, 120]},
-				"ocr_config_mode": "--psm 6"},
-	"n_serial": {
-				"coords": {"default": [940, 1350, 845, 120]},
-				"ocr_config_mode": "--psm 7"},
-	"nombres_tomador": {
-				"coords": {"default": [110, 1540, 1135, 120]},
-				"ocr_config_mode": "--psm 7"},
-	"pasajeros": {
-				"coords": {"default": [110, 1150, 160, 120]},
-				"ocr_config_mode": "--psm 7 --psm 10 outputbase digits"},
-	"placa": {
-				"coords": {"default": [520, 950, 335, 120]},
-				"ocr_config_mode": "--psm 7"},
-	"prima_soat": {
-				"coords": {"default": [275, 1960, 445, 110]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"servicio": {
-				"coords": {"default": [1470, 950, 660, 120]},
-				"ocr_config_mode": "--psm 6"},
-	"tarifa": {
-				"coords": {"default": [105, 1950, 150, 120]},
-				"ocr_config_mode": "--psm 7"},
-	"tasa_runt": {
-				"coords": {"default": [1190, 1960, 465, 110]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"telef_tomador": {
-				"coords": {"default": [1265, 1540, 410, 120]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"tipo_doc_tomador": {
-				"coords": {"default": [1690, 1570, 380, 90]},
-				"ocr_config_mode": "--psm 7 --psm 6"},
-	"total_a_pagar": {
-				"coords": {"default": [83, 2264,  450,  98], "AXA COLPATRIA": [295, 2070, 445, 70], "MUNDIAL": [70, 2164, 450, 98] , "SURA": [295, 2070, 445, 70]},
-				"ocr_config_mode": "--psm 7 outputbase digits"},
-	"vin": {
-				"coords": {"default": [1800, 1350, 845, 120]},
-				"ocr_config_mode": "--psm 7"}}
+{
+	"available_line_insurers": ["AXA COLPATRIA", "BOLIVAR", "MUNDIAL", "SURA"],
+	"field_boxes": {
+		"asegurador": {
+			"coords": {
+				"default": [ 2600, 0, 800, 800 ]
+			},
+			"ocr_config_mode": [ "--psm 7", "--psm 6" ]
+		},
+		"cap_ton": {
+			"coords": {
+				"default": [ 2665, 1350, 255, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"carroceria": {
+			"coords": {
+				"default": [ 2000, 1150, 925, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 --psm 11"
+		},
+		"cilindraje-vatios": {
+			"coords": {
+				"default": [ 2145, 950, 370, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": null
+		},
+		"ciudad_resid_tomador": {
+			"coords": {
+				"default": [ 2515, 1540, 410, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 --psm 11",
+			"regex_pattern": "[A-Z].*[A-Z]"
+		},
+		"clase_veh": {
+			"coords": {
+				"default": [ 870, 950, 590, 120 ]
+			},
+			"ocr_config_mode": "--psm 6",
+			"regex_pattern": "[A-Z].*[A-Z]"
+		},
+		"coberturas": {
+			"coords": {
+				"default": [ 1705, 1960, 555, 435 ]
+			},
+			"ocr_config_mode": "--psm 11"
+		},
+		"cod_asegurador": {
+			"coords": {
+				"default": [ 110, 1740, 540, 120 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		},
+		"contrib_fosyga": {
+			"coords": {
+				"default": [ 740, 1960, 440, 110 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"fecha_expedicion": {
+			"coords": {
+				"default": [ 186, 570, 340, 75 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"fecha_inicio": {
+			"coords": {
+				"default": [ 640, 570, 325, 75 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"fecha_vencimiento": {
+			"coords": {
+				"default": [ 1100, 570, 315, 80 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"lim_de_cobertura": {
+			"coords": {
+				"default": [ 2300, 1940, 220, 450 ]
+			},
+			"ocr_config_mode": "--psm 11"
+		},
+		"linea_veh": {
+			"coords": {
+				"default": [ 445, 1185, 1545, 85 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		},
+		"marca": {
+			"coords": {
+				"default": [ 445, 1100, 1545, 85 ]
+			},
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "[A-Z].*[A-Z]"
+		},
+		"modelo": {
+			"coords": {
+				"default": [ 2530, 950, 390, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": null
+		},
+		"n_doc_tomador": {
+			"coords": {
+				"default": [ 2085, 1570, 420, 95 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"n_motor": {
+			"coords": {
+				"default": [ 110, 1350, 810, 115 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		},
+		"n_poliza": {
+			"coords": {
+				"default": [ 110, 950, 370, 120 ]
+			},
+			"ocr_config_mode": "--psm 6"
+		},
+		"n_serial": {
+			"coords": {
+				"default": [ 940, 1350, 845, 120 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		},
+		"nombres_tomador": {
+			"coords": {
+				"default": [ 110, 1540, 1135, 120 ]
+			},
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "[A-Z].*[A-Z]"
+		},
+		"pasajeros": {
+			"coords": {
+				"default": [ 110, 1150, 160, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 --psm 10 outputbase digits",
+			"regex_pattern": null
+		},
+		"placa": {
+			"coords": {
+				"default": [ 520, 950, 335, 120 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		},
+		"prima_soat": {
+			"coords": {
+				"default": [ 275, 1960, 445, 110 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"servicio": {
+			"coords": {
+				"default": [ 1470, 950, 660, 120 ]
+			},
+			"ocr_config_mode": "--psm 6"
+		},
+		"tarifa": {
+			"coords": {
+				"default": [ 105, 1950, 150, 120 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		},
+		"tasa_runt": {
+			"coords": {
+				"default": [ 1190, 1960, 465, 110 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"telef_tomador": {
+			"coords": {
+				"default": [ 1265, 1540, 410, 120 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"tipo_doc_tomador": {
+			"coords": {
+				"default": [ 1690, 1570, 380, 90 ]
+			},
+			"ocr_config_mode": "--psm 7 --psm 6"
+		},
+		"total_a_pagar": {
+			"coords": {
+				"default": [ 83, 2264, 450, 98 ],
+				"AXA COLPATRIA": [ 0, 2165, 530, 100 ],
+				"MUNDIAL": [ 70, 2164, 450, 98 ],
+				"SURA": [ 295, 2070, 445, 70 ]
+			},
+			"ocr_config_mode": "--psm 7 outputbase digits"
+		},
+		"vin": {
+			"coords": {
+				"default": [ 1800, 1350, 845, 120 ]
+			},
+			"ocr_config_mode": "--psm 7"
+		}
+	},
+	"offsets": {
+		"AXA COLPATRIA": [ 0, 5 ],
+		"BOLIVAR": [ 0, -5 ],
+		"MUNDIAL": [ 0, 0 ],
+		"SURA": [ 0, 120 ]}
 }
