@@ -1,18 +1,17 @@
 """
 Created on Sat Oct 10 15:25:16 2020
-Modified on Sun Mar 7 21:40 2021
+Modified on Sun Mar 13 00:09 2021
 @author: M.Padilla
 """
 
 import cv2 as cv
 import filetype
-import getpass #NUEVA DEPENDENCIA
+import getpass
 import json
 import numpy as np
 import pdf2image 
 import pytesseract
 import os
-import re #NUEVA DEPENDENCIA
 import sys
 
 
