@@ -5,40 +5,43 @@
 			"coords": {
 				"default": [ 2600, 0, 800, 800 ]
 			},
-			"ocr_config_mode": [ "--psm 7", "--psm 6" ]
+			"ocr_config_mode": [ "--psm 7", "--psm 6" ],
+			"regex_pattern": "^[A-Z]+(\\s[A-Z\\.]+)*$"
 		},
 		"cap_ton": {
 			"coords": {
 				"default": [ 2665, 1350, 255, 120 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^\\d+(\\.[1-9]0)?$|^$"
 		},
 		"carroceria": {
 			"coords": {
 				"default": [ 2000, 1150, 925, 120 ]
 			},
-			"ocr_config_mode": "--psm 7 --psm 11"
+			"ocr_config_mode": "--psm 7 --psm 11",
+			"regex_pattern": "^[A-Z]+([\\s\\-A-Z]+)*[A-Z\\d]+$|^$"
 		},
 		"cilindraje-vatios": {
 			"coords": {
 				"default": [ 2145, 950, 370, 120 ]
 			},
 			"ocr_config_mode": "--psm 7 outputbase digits",
-			"regex_pattern": null
+			"regex_pattern": "\\d+[.,]?\\d+|^$"
 		},
 		"ciudad_resid_tomador": {
 			"coords": {
 				"default": [ 2515, 1540, 410, 120 ]
 			},
 			"ocr_config_mode": "--psm 7 --psm 11",
-			"regex_pattern": "[A-Z].*[A-Z]"
+			"regex_pattern": "[A-Z]+(\\s[A-Z]+)*[A-Z]$|^$"
 		},
 		"clase_veh": {
 			"coords": {
 				"default": [ 870, 950, 590, 120 ]
 			},
 			"ocr_config_mode": "--psm 6",
-			"regex_pattern": "[A-Z].*[A-Z]"
+			"regex_pattern": "[A-Z]+(\\s[A-Z]+)*"
 		},
 		"coberturas": {
 			"coords": {
@@ -50,31 +53,36 @@
 			"coords": {
 				"default": [ 110, 1740, 540, 120 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "[\\dA-Z]+$|^$"
 		},
 		"contrib_fosyga": {
 			"coords": {
 				"default": [ 740, 1960, 440, 110 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^\\d+(\\.[1-9]0)?$"
 		},
 		"fecha_expedicion": {
 			"coords": {
 				"default": [ 186, 570, 340, 75 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "\\d{4}\\s(\\d{2}|\\d{1})\\s(\\d{2}|\\d{1})"
 		},
 		"fecha_inicio": {
 			"coords": {
 				"default": [ 640, 570, 325, 75 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "\\d{4}\\s?(\\d{2}|\\d{1})\\s?(\\d{2}|\\d{1})"
 		},
 		"fecha_vencimiento": {
 			"coords": {
 				"default": [ 1100, 570, 315, 80 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "\\d{4}\\s?(\\d{2}|\\d{1})\\s?(\\d{2}|\\d{1})"
 		},
 		"lim_de_cobertura": {
 			"coords": {
@@ -86,116 +94,131 @@
 			"coords": {
 				"default": [ 445, 1185, 1545, 85 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "[\\dA-Z]+(\\s[\\dA-Z]+)*[\\dA-Z]$|^$"
 		},
 		"marca": {
 			"coords": {
 				"default": [ 445, 1100, 1545, 85 ]
 			},
 			"ocr_config_mode": "--psm 7",
-			"regex_pattern": "[A-Z].*[A-Z]"
+			"regex_pattern": "[A-Z]+(\\s[A-Z]+)*[A-Z]$"
 		},
 		"modelo": {
 			"coords": {
 				"default": [ 2530, 950, 390, 120 ]
 			},
 			"ocr_config_mode": "--psm 7 outputbase digits",
-			"regex_pattern": null
+			"regex_pattern": "\\d{4}"
 		},
 		"n_doc_tomador": {
 			"coords": {
 				"default": [ 2085, 1570, 420, 95 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "\\d+"
 		},
 		"n_motor": {
 			"coords": {
 				"default": [ 110, 1350, 810, 115 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "[\\dA-Z]+"
 		},
 		"n_poliza": {
 			"coords": {
 				"default": [ 110, 950, 370, 120 ]
 			},
-			"ocr_config_mode": "--psm 6"
+			"ocr_config_mode": "--psm 6",
+			"regex_pattern": "^\\d+$|^\\d+(\\s\\-\\s)?\\d+$"
 		},
 		"n_serial": {
 			"coords": {
 				"default": [ 940, 1350, 845, 120 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "[\\dA-Z]+"
 		},
 		"nombres_tomador": {
 			"coords": {
 				"default": [ 110, 1540, 1135, 120 ]
 			},
 			"ocr_config_mode": "--psm 7",
-			"regex_pattern": "[A-Z].*[A-Z]"
+			"regex_pattern": "[A-Z]+(\\s[A-Z\\.]+)+"
 		},
 		"pasajeros": {
 			"coords": {
 				"default": [ 110, 1150, 160, 120 ]
 			},
 			"ocr_config_mode": "--psm 7 --psm 10 outputbase digits",
-			"regex_pattern": null
+			"regex_pattern": "\\d{1}\\b|\\d{2}\\b|^$"
 		},
 		"placa": {
 			"coords": {
 				"default": [ 520, 950, 335, 120 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^[A-Z]{3}\\d{2}[A-Z\\d]$"
 		},
 		"prima_soat": {
 			"coords": {
 				"default": [ 275, 1960, 445, 110 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^\\d+(\\.[1-9]0)?$"
 		},
 		"servicio": {
 			"coords": {
 				"default": [ 1470, 950, 660, 120 ]
 			},
-			"ocr_config_mode": "--psm 6"
+			"ocr_config_mode": "--psm 6",
+			"regex_pattern": "[A-Z]+(\\s[A-Z]+)*"
 		},
 		"tarifa": {
 			"coords": {
 				"default": [ 105, 1950, 150, 120 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "\\d+"
 		},
 		"tasa_runt": {
 			"coords": {
 				"default": [ 1190, 1960, 465, 110 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^\\d+(\\.[1-9]0)?$"
 		},
 		"telef_tomador": {
 			"coords": {
 				"default": [ 1265, 1540, 410, 120 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^\\d{7}$|^\\d{10}$|^$"
 		},
 		"tipo_doc_tomador": {
 			"coords": {
 				"default": [ 1690, 1570, 380, 90 ]
 			},
-			"ocr_config_mode": "--psm 7 --psm 6"
+			"ocr_config_mode": "--psm 7 --psm 6",
+			"regex_pattern": "^[A-Z]+(\\s[A-Z]+)*[A-Z]$"
 		},
 		"total_a_pagar": {
 			"coords": {
 				"default": [ 83, 2264, 450, 98 ],
 				"AXA COLPATRIA": [ 0, 2165, 530, 100 ],
-				"MUNDIAL": [ 70, 2164, 450, 98 ],
+				"BOLIVAR": [ 83, 2164, 450, 98 ],
+				"MUNDIAL": [ 83, 2164, 450, 98 ],
 				"SURA": [ 295, 2070, 445, 70 ]
 			},
-			"ocr_config_mode": "--psm 7 outputbase digits"
+			"ocr_config_mode": "--psm 7 outputbase digits",
+			"regex_pattern": "^\\d+(\\.[1-9]0)?$"
 		},
 		"vin": {
 			"coords": {
 				"default": [ 1800, 1350, 845, 120 ]
 			},
-			"ocr_config_mode": "--psm 7"
+			"ocr_config_mode": "--psm 7",
+			"regex_pattern": "^[\\dA-Z]+$"
 		}
 	},
 	"offsets": {
