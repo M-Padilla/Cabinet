@@ -16,6 +16,7 @@ import pytesseract
 import os
 import re
 import sys
+import warnings
 
 
 def box_construction(xywh_array):
@@ -29,28 +30,39 @@ def box_construction(xywh_array):
     return xywh_array
 
 
+def config_loader(config_file):
+    with open(config_file, mode='r') as config_f:
+        data = json.load(config_f)
+        # Load boxes, psm mode and regex patterns for every field
+        _field_boxes = data["field_boxes"]
+        # Load available insurers for this policy line.
+        _insurers_list = data["supported_line_insurers"]
+        # Load necessary offsets for certain insurers
+        _all_offsets = data["offsets"]
+    return _field_boxes, _insurers_list, _all_offsets
+
+
 def file_checker(pdf_doc):
+    # Check if file is PDF
     if filetype.guess(pdf_doc).extension != 'pdf':
-        # Check if file is PDF
         raise TypeError
-    elif os.stat(pdf_doc).st_size / (1024 * 1024) > 10.0:
-        # Check for PDF size, max 10 MB.
+    # Check for PDF size, max 10 MB.
+    if os.stat(pdf_doc).st_size / (1024 * 1024) > 10.0:
         raise MemoryError
-    else:
-        # Check is PDF is password protected.
-        password = None
-        while True:
-            try:
-                # Convert to .jpeg image file
-                images_from_path = pdf2image.convert_from_path(
-                        file, fmt="jpeg", dpi=400,
-                        single_file=True, userpw=password)
-                break
-            except pdf2image.exceptions.PDFPageCountError:
-                # Prompt for password
-                print('LOCKED PDF ERROR: PDF is password protected.')
-                password = getpass.getpass(
-                        prompt='Please provide a valid password: ')
+    # Check is PDF is password protected.
+    password = None
+    while True:
+        try:
+            # Convert to .jpeg image file
+            images_from_path = pdf2image.convert_from_path(
+                    file, fmt="jpeg", dpi=400, single_file=True,
+                    userpw=password)
+            break
+        except pdf2image.exceptions.PDFPageCountError:
+            # Prompt for password
+            print('LOCKED PDF ERROR: PDF is password protected.')
+            password = getpass.getpass(
+                    prompt='Please provide a valid password: ')
     return images_from_path
 
 
@@ -106,17 +118,20 @@ def field_ocr(_image, psm_config_modes, _insurer):
     if _insurer is not None:  # Standard field recognition
         return str(pytesseract.image_to_string(_image, config=psm_config_modes)
                    ).strip().upper().replace('\n', " ")
-    else:  # Insurer name recognition
-        for mode in psm_config_modes:
-            # Try to identify the insurer using several psm modes
-            insurer_txt = str(pytesseract.image_to_string(_image, config=mode)
-                              ).strip().upper()
-            for available_insurer in insurers_list:
-                # Checks the available insurers for this policy line using
-                # global variable insurers_list
-                if available_insurer in insurer_txt:
-                    # Implictly returns None if insurer is not found.
-                    return available_insurer
+    # Insurer name recognition
+    for mode in psm_config_modes:
+        # Try to identify the insurer using several psm modes
+        insurer_txt = str(pytesseract.image_to_string(_image, config=mode)
+                          ).strip().upper()
+        for supported_insurer in insurers_list:
+            # Checks the available insurers for this policy line using
+            # global variable insurers_list
+            if supported_insurer in insurer_txt:
+                # Implicitly returns None if insurer is not found.
+                return supported_insurer
+    warnings.warn("WARNING: Insurer is not currently supported. Default "
+                  "parameters will be used. This may affect recognition "
+                  "accuracy.")
 
 
 def numeric_string_format_linter(numeric_string):
@@ -173,20 +188,7 @@ except Exception as err:
         print('SIZE ERROR: Maximum file size is 10 MB')
     sys.exit()
 
-# Retrieve box coordinates (x, y, w, h) for every field.
-with open('config.json', mode='r') as config_f:
-    data = json.load(config_f)
-    # Load boxes, psm mode and regex patterns for every field
-    field_boxes = data["field_boxes"]
-    # Load available insurers for this policy line.
-    insurers_list = data["available_line_insurers"]
-    # Load necessary offsets for certain insurers
-    all_offsets = data["offsets"]
-    del data
-
-'''
-cv.imwrite('ASTRALDO.jpeg', image) # MERELY FOR TEST PURPOSES, WILL BE DELETED
-'''
+field_boxes, insurers_list, all_offsets = config_loader('config.json')
 
 # Insurer identification via OCR
 insurer, output = None, {}
@@ -205,25 +207,24 @@ needs_review_fields = []
 # Once the insurer has been identified and the image has been cropped,
 # recognize the remaining fields
 for field in field_boxes.keys():
-    if field != 'asegurador':
-        # Field OCR
-        output[field] = field_ocr(
-                field_img_generator(image, field, field_boxes, insurer),
-                field_boxes[field]['ocr_config_mode'], insurer)
-        try:
-            # Attempt to validate the recognized field according to its
-            # designated regex pattern
-            matched_text = regex_text_checker(
-                                        field_boxes[field]['regex_pattern'],
-                                        output[field])
-            if matched_text is not None:  # Successful validation
-                output[field] = matched_text
-            else:  # Failed validation
-                needs_review_fields.append(field)
-        except:
-            pass
-    else:
+    if field == 'asegurador':
         continue
+    # Field OCR
+    output[field] = field_ocr(
+            field_img_generator(image, field, field_boxes, insurer),
+            field_boxes[field]['ocr_config_mode'], insurer)
+    try:
+        # Attempt to validate the recognized field according to its
+        # designated regex pattern
+        matched_text = regex_text_checker(
+                                    field_boxes[field]['regex_pattern'],
+                                    output[field])
+        if matched_text is not None:  # Successful validation
+            output[field] = matched_text
+        else:  # Failed validation
+            needs_review_fields.append(field)
+    except:
+        pass
 
 corrected_fields = []  # Reviewed fields that were corrected.
 
@@ -250,8 +251,7 @@ for field in needs_review_fields:
                                                                       "0")])
 
     elif len(output[field]) == 2 and output[field] == 'OB':
-        # Any strings composed only by 'OB' should be regarded as a empty
-        # strings
+        # Any strings composed only by 'OB' should be regarded as empty strings
         output[field] = ''
 
     elif field in ('cap_ton', 'cilindraje-vatios', 'contrib_fosyga',
@@ -261,8 +261,8 @@ for field in needs_review_fields:
         output[field] = numeric_string_format_linter(output[field])
 
     # Check if the field now complies with its designated regex pattern
-    if regex_text_checker(field_boxes[field]['regex_pattern'], output[field]
-                          ) is not None:
+    if regex_text_checker(field_boxes[field]['regex_pattern'],
+                          output[field]) is not None:
         corrected_fields.append(field)
 
 # Retain the fields that weren't corrected for manual correction from the user.
