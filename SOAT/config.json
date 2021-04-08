@@ -1,5 +1,5 @@
 {
-	"available_line_insurers": ["AXA COLPATRIA", "BOLIVAR", "MUNDIAL", "SURA"],
+	"supported_line_insurers": ["AXA COLPATRIA", "BOLIVAR", "MUNDIAL", "SURA"],
 	"field_boxes": {
 		"asegurador": {
 			"coords": {
