@@ -94,7 +94,7 @@ def img_preprocessor(image_np_array, _insurer=None):
         # Blur correction, to remove high frequency content (eg: noise, edges)
         # from the image
         image_np_array = cv.GaussianBlur(image_np_array, (7, 7),
-                                         sigmaX=1, sigmaY=0)
+                                         sigmaX=1, sigmaY=2)
     return image_np_array
 
 
@@ -111,6 +111,74 @@ def field_img_generator(_image, _field, _field_boxes, _insurer):
                          field_coords[0]: field_coords[2]]
     field_image = img_preprocessor(field_image, _insurer)
     return field_image
+
+
+def field_linter(field_string, mode):
+    
+    def date_linter(date_string):
+        date_string = re.sub('[^\d\s]', '', date_string).strip()
+        if regex_text_checker('\d{5,6}\s\d{1,2}',
+                              date_string) is not None:
+            date_string = date_string[:4] + ' ' + date_string[4:]
+        return date_string
+    
+    def empty_linter(field_string):
+        if len(field_string) == 2 and field_string == 'OB':
+            return ''
+        return field_string
+    
+    def numeric_string_format_linter(numeric_string):
+        '''
+        Performs a series of validations and corrections for a number stored as a
+        string.
+        '''
+        numeric_string = re.sub('[^\d\.\,]', '', numeric_string).strip()
+        
+        if regex_text_checker('\d{1,3}([\.,]?\d{3})*[\.,][0]{2}$',
+                              numeric_string) is not None:
+            numeric_string = numeric_string[:-3]
+    
+        if regex_text_checker('^\d{1,3}([\.,]\d{3})+$',
+                              numeric_string) is not None:
+            numeric_string = re.sub("[\.,]", "", numeric_string)
+    
+        if regex_text_checker('^\d{1,3}([\.,]\d{3})+[\.,]\d{1,2}$',
+                              numeric_string) is not None:
+            separators = [numeric_string.rindex('.'), numeric_string.rindex(',')]
+            separators.sort()
+            nondecimal_separator, decimal_separator = separators
+            numeric_string = numeric_string.replace(
+                                                    decimal_separator, 'sep'
+                                                    ).replace(
+                                                    nondecimal_separator, ''
+                                                    ).replace('sep', '.')
+        
+        if regex_text_checker('^\d+,[1-9]0?', numeric_string) is not None:
+            numeric_string = numeric_string.replace(",", ".")
+    
+        return numeric_string
+    
+    def placa_linter(placa_string):
+        # Delete the & char in the placa field, sometimes mistakenly duplicated
+        # by pytesseract when the char '8' is present.
+        placa_string = placa_string.replace("&", "")
+        if len(placa_string) == 6:
+            # If the placa field belongs to a motorcycle or car, replace
+            # 'O' by '0' in certain positions of the string
+            if output['clase_veh'] == 'MOTOCICLETA':
+                # The placa field belongs to a motorcycle
+                placa_string = ''.join([placa_string[0:3],
+                                        placa_string[3:-1].replace("O", "0"),
+                                        placa_string[-1]])
+            else:
+                # The placa field belongs to a car
+                placa_string = ''.join([placa_string[0:3],
+                                        placa_string[3:].replace("O", "0")])
+        return placa_string
+    
+    
+    function = eval(mode + "_linter")
+    return function(field_string)
 
 
 def field_ocr(_image, psm_config_modes, _insurer):
@@ -133,37 +201,6 @@ def field_ocr(_image, psm_config_modes, _insurer):
                   "accuracy.")
 
 
-def numeric_string_format_linter(numeric_string):
-    '''
-    Performs a series of validations and corrections for a number stored as a
-    string.
-    '''
-    numeric_string = numeric_string.replace('$', '').strip()
-
-    if regex_text_checker('\d+[\.,][0]{2}$', numeric_string) is not None:
-        numeric_string = numeric_string[:-3]
-
-    if regex_text_checker('^\d{1,3}([\.,]\d{3})+$', numeric_string
-                          ) is not None:
-        numeric_string = re.sub("[\.,]", "", numeric_string)
-
-    if regex_text_checker('^\d{1,3}([\.,]\d{3})+[\.,]\d{1,2}$', numeric_string
-                          ) is not None:
-        separators = [numeric_string.rindex('.'), numeric_string.rindex(',')]
-        separators.sort()
-        nondecimal_separator, decimal_separator = separators
-        numeric_string = numeric_string.replace(
-                                                decimal_separator, 'sep'
-                                                ).replace(
-                                                nondecimal_separator, ''
-                                                ).replace('sep', '.')
-
-    if regex_text_checker('^\d+,[1-9]0?', numeric_string) is not None:
-        numeric_string = numeric_string.replace(",", ".")
-
-    return numeric_string
-
-
 def regex_text_checker(_regex_pattern, text):
     # Checks if a text follows a regex pattern; if true, will return the
     # text, otherwise returns None.
@@ -172,7 +209,7 @@ def regex_text_checker(_regex_pattern, text):
         return _matched_text.group()
 
 
-file = "C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT AXA Colpatria.pdf"
+file = "C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT Patricia.pdf"
 pytesseract.pytesseract.tesseract_cmd = 'D:/Programas/anaconda3/pkgs/'\
                                         'tesseract-4.1.1-h1fd39ab_3/Library/'\
                                         'bin/tesseract.exe'
@@ -230,39 +267,19 @@ corrected_fields = []  # Reviewed fields that were corrected.
 # Perform some validations and corrections for recognized fields in need of
 # review.
 for field in needs_review_fields:
-    if field == 'placa':  # Corrections for the placa field
-        # Delete the & char in the placa field, sometimes mistakenly duplicated
-        # by pytesseract when the char '8' is present.
-        output['placa'] = output['placa'].replace("&", "")
-        if len(output[field]) == 6:
-            # If the placa field belongs to a motorcycle or car, replace
-            # 'O' by '0' in certain positions of the string
-            if output['clase_veh'] == 'MOTOCICLETA':
-                # The placa field belongs to a motorcycle
-                output['placa'] = ''.join([output['placa'][0:3],
-                                          output['placa'][3:-1].replace("O",
-                                                                        "0"),
-                                          output['placa'][-1]])
-            else:
-                # The placa field belongs to a car
-                output['placa'] = ''.join([output['placa'][0:3],
-                                          output['placa'][3:].replace("O",
-                                                                      "0")])
-
-    elif len(output[field]) == 2 and output[field] == 'OB':
-        # Any strings composed only by 'OB' should be regarded as empty strings
-        output[field] = ''
-
+    output[field] = field_linter(output[field], "empty")
+    if field in ('placa'):
+        output[field] = field_linter(output[field], "placa")
+    elif field in ('fecha_expedicion', 'fecha_inicio', 'fecha_vencimiento'):
+        output[field] = field_linter(output[field], "date")
     elif field in ('cap_ton', 'cilindraje-vatios', 'contrib_fosyga',
                    'prima_soat', 'tasa_runt', 'total_a_pagar'):
-        # Correct numeric fields related to prices, vehicle power and
-        # load capacity
-        output[field] = numeric_string_format_linter(output[field])
-
+        output[field] = field_linter(output[field], "numeric_string_format")
     # Check if the field now complies with its designated regex pattern
     if regex_text_checker(field_boxes[field]['regex_pattern'],
                           output[field]) is not None:
         corrected_fields.append(field)
+
 
 # Retain the fields that weren't corrected for manual correction from the user.
 needs_review_fields = list(
