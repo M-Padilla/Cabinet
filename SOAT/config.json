@@ -13,7 +13,7 @@
 				"default": [ 2665, 1350, 255, 120 ]
 			},
 			"ocr_config_mode": "--psm 7 outputbase digits",
-			"regex_pattern": "^\\d+(\\.[1-9]0)?$|^$"
+			"regex_pattern": "^\\d+(\\.([1-9]0|\\d))?$|^$"
 		},
 		"carroceria": {
 			"coords": {
@@ -27,7 +27,7 @@
 				"default": [ 2145, 950, 370, 120 ]
 			},
 			"ocr_config_mode": "--psm 7 outputbase digits",
-			"regex_pattern": "\\d+[.,]?\\d+|^$"
+			"regex_pattern": "\\d+[\\.,]?\\d+|^$"
 		},
 		"ciudad_resid_tomador": {
 			"coords": {
@@ -75,14 +75,14 @@
 				"default": [ 640, 570, 325, 75 ]
 			},
 			"ocr_config_mode": "--psm 7 outputbase digits",
-			"regex_pattern": "\\d{4}\\s?(\\d{2}|\\d{1})\\s?(\\d{2}|\\d{1})"
+			"regex_pattern": "\\d{4}\\s(\\d{2}|\\d{1})\\s(\\d{2}|\\d{1})"
 		},
 		"fecha_vencimiento": {
 			"coords": {
 				"default": [ 1100, 570, 315, 80 ]
 			},
 			"ocr_config_mode": "--psm 7 outputbase digits",
-			"regex_pattern": "\\d{4}\\s?(\\d{2}|\\d{1})\\s?(\\d{2}|\\d{1})"
+			"regex_pattern": "\\d{4}\\s(\\d{2}|\\d{1})\\s(\\d{2}|\\d{1})"
 		},
 		"lim_de_cobertura": {
 			"coords": {
