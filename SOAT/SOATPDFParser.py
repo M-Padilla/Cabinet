@@ -18,18 +18,16 @@ import sys
 import warnings
 
 
-def box_construction(xywh_array):
-    # This could be deleted if (x,y,x+w,y+h) is stored directly in the JSON file, in the correct order
+def build_region_box(xywh_array):
     '''
     Turns an array of coordinates (x, y, w, h) into an array of coordinates
     (x, y, x+w, y+h)
     '''
-    xywh_array[2] += xywh_array[0]
-    xywh_array[3] += xywh_array[1]
-    return xywh_array
+    x, y, w, h = xywh_array
+    return [x, y, x + w, y + h]
 
 
-def config_loader(config_file):
+def load_config(config_file):
     with open(config_file, mode='r') as config_f:
         data = json.load(config_f)
         # Load boxes, psm mode and regex patterns for every field
@@ -41,7 +39,7 @@ def config_loader(config_file):
     return _field_boxes, _insurers_list, _all_offsets
 
 
-def file_checker(pdf_doc):
+def check_input_file(pdf_doc):
     # Check if file is PDF
     if filetype.guess(pdf_doc).extension != 'pdf':
         raise TypeError
@@ -65,7 +63,7 @@ def file_checker(pdf_doc):
     return images_from_path
 
 
-def img_cropper(image_np_array, _insurer):
+def crop_image(image_np_array, _insurer):
     '''
     Crops image to a delimited box to remove footer and blank spaces in the top
     and sides.
@@ -76,14 +74,13 @@ def img_cropper(image_np_array, _insurer):
     # each insurer using the global variable offsets.
     offset = all_offsets.get(_insurer, (0, 0))
     # Adjust cropbox boundaries
-    cropbox = (
-            cropbox[0]+offset[1], cropbox[1]+offset[1],
-            cropbox[2]+offset[0], cropbox[3]+offset[0])
+    cropbox = (cropbox[0]+offset[1], cropbox[1]+offset[1],
+               cropbox[2]+offset[0], cropbox[3]+offset[0])
     return image_np_array[cropbox[0]:cropbox[1], cropbox[2]:cropbox[3]]
     # (y:y+h, x:x+w)
 
 
-def img_preprocessor(image_np_array, _insurer=None):
+def preprocess_image(image_np_array, _insurer=None):
     # Convert RGB to BGR (required by OpenCV) gray scale.
     image_np_array = cv.cvtColor(image_np_array, cv.COLOR_BGR2GRAY)
     if _insurer is not None:
@@ -98,66 +95,67 @@ def img_preprocessor(image_np_array, _insurer=None):
     return image_np_array
 
 
-def field_img_generator(_image, _field, _field_boxes, _insurer):
+def create_field_image(_image, _field, _field_boxes, _insurer):
     field_coords = np.array(_field_boxes[_field]['coords'].get(
                             _insurer,
                             _field_boxes[_field]['coords']['default']))
     # Turns an array of coordinates (x, y, w, h) into an array of coordinates
     # (x, y, x+w, y+h)
-    field_coords = box_construction(field_coords)  # This could be deleted if (x,y,x+w,y+h) is stored directly in the JSON file, in the correct order
+    field_coords = build_region_box(field_coords)
     # Retrieve field image corresponding to field coordinates in the following
     # order: (y:y+h, x:x+w), then apply OCR and convert to string
     field_image = _image[field_coords[1]: field_coords[3],
                          field_coords[0]: field_coords[2]]
-    field_image = img_preprocessor(field_image, _insurer)
+    field_image = preprocess_image(field_image, _insurer)
     return field_image
 
 
-def field_linter(field_string, mode):
-    
+def lint_field(field_string, mode):
+
     def date_linter(date_string):
-        date_string = re.sub('[^\d\s]', '', date_string).strip()
-        if regex_text_checker('\d{5,6}\s\d{1,2}',
-                              date_string) is not None:
+        date_string = re.sub(r'[^\d\s]', '', date_string).strip()
+        if check_ocr_text_w_regex(r'\d{5,6}\s\d{1,2}',
+                                  date_string) is not None:
             date_string = date_string[:4] + ' ' + date_string[4:]
         return date_string
-    
+
     def empty_linter(field_string):
-        if len(field_string) == 2 and field_string == 'OB':
+        if field_string == 'OB':
             return ''
         return field_string
-    
-    def numeric_string_format_linter(numeric_string):
+
+    def numeric_string_linter(numeric_string):
         '''
-        Performs a series of validations and corrections for a number stored as a
-        string.
+        Performs a series of validations and corrections for a number stored as
+        a string.
         '''
-        numeric_string = re.sub('[^\d\.\,]', '', numeric_string).strip()
-        
-        if regex_text_checker('\d{1,3}([\.,]?\d{3})*[\.,][0]{2}$',
-                              numeric_string) is not None:
+        numeric_string = re.sub(r'[^\d\.\,]', '', numeric_string).strip()
+
+        if check_ocr_text_w_regex(r'\d{1,3}([\.,]?\d{3})*[\.,][0]{2}$',
+                                  numeric_string) is not None:
+            # Remove decimal part when it is composed by a double zero.
             numeric_string = numeric_string[:-3]
-    
-        if regex_text_checker('^\d{1,3}([\.,]\d{3})+$',
-                              numeric_string) is not None:
+
+        if check_ocr_text_w_regex(r'^\d{1,3}([\.,]\d{3})+$',
+                                  numeric_string) is not None:
+            # Remove nondecimal separators when the string is a whole number.
             numeric_string = re.sub("[\.,]", "", numeric_string)
-    
-        if regex_text_checker('^\d{1,3}([\.,]\d{3})+[\.,]\d{1,2}$',
-                              numeric_string) is not None:
-            separators = [numeric_string.rindex('.'), numeric_string.rindex(',')]
-            separators.sort()
-            nondecimal_separator, decimal_separator = separators
-            numeric_string = numeric_string.replace(
-                                                    decimal_separator, 'sep'
-                                                    ).replace(
-                                                    nondecimal_separator, ''
-                                                    ).replace('sep', '.')
-        
-        if regex_text_checker('^\d+,[1-9]0?', numeric_string) is not None:
-            numeric_string = numeric_string.replace(",", ".")
-    
+
+        if check_ocr_text_w_regex(r'^\d{1,3}([\.,]\d{3})+[\.,]\d{1,2}$',
+                                  numeric_string) is not None:
+            # Remove nondecimal separators and correct decimal separator when
+            # the string has a valid decimal part.
+            if numeric_string[-3] in (',', '.'):
+                decimal_sep = numeric_string[-3]
+            else:
+                decimal_sep = numeric_string[-2]
+
+            nondecimal_sep = ',' if decimal_sep == '.' else '.'
+            numeric_string = numeric_string.translate(
+                    str.maketrans(decimal_sep, ".", nondecimal_sep))
+
         return numeric_string
-    
+
     def placa_linter(placa_string):
         # Delete the & char in the placa field, sometimes mistakenly duplicated
         # by pytesseract when the char '8' is present.
@@ -175,16 +173,19 @@ def field_linter(field_string, mode):
                 placa_string = ''.join([placa_string[0:3],
                                         placa_string[3:].replace("O", "0")])
         return placa_string
-    
-    
-    function = eval(mode + "_linter")
+
+    linter_functions_dict = {"date": date_linter, "empty": empty_linter,
+                   "numeric_string": numeric_string_linter,
+                   "placa": placa_linter}
+    function = linter_functions_dict[mode]
+
     return function(field_string)
 
 
-def field_ocr(_image, psm_config_modes, _insurer):
+def ocr_field(_image, psm_config_modes, _insurer):
     if _insurer is not None:  # Standard field recognition
         return str(pytesseract.image_to_string(_image, config=psm_config_modes)
-                   ).strip().upper().replace('\n', " ")
+                   ).translate(str.maketrans('\n|', '  ')).strip().upper()
     # Insurer name recognition
     for mode in psm_config_modes:
         # Try to identify the insurer using several psm modes
@@ -201,7 +202,7 @@ def field_ocr(_image, psm_config_modes, _insurer):
                   "accuracy.")
 
 
-def regex_text_checker(_regex_pattern, text):
+def check_ocr_text_w_regex(_regex_pattern, text):
     # Checks if a text follows a regex pattern; if true, will return the
     # text, otherwise returns None.
     _matched_text = re.search(_regex_pattern, text)
@@ -209,14 +210,14 @@ def regex_text_checker(_regex_pattern, text):
         return _matched_text.group()
 
 
-file = "C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT Patricia.pdf"
-pytesseract.pytesseract.tesseract_cmd = 'D:/Programas/anaconda3/pkgs/'\
+file = r"C:/Users/user/Documents/Proyectos/Cabinet 1/SOAT Mundial.pdf"
+pytesseract.pytesseract.tesseract_cmd = r'D:/Programas/anaconda3/pkgs/'\
                                         'tesseract-4.1.1-h1fd39ab_3/Library/'\
                                         'bin/tesseract.exe'
 
 # Attempt conversion to NumPy array with RGB values for reading through OpenCV
 try:
-    image = np.array(file_checker(file)[0])
+    image = np.array(check_input_file(file)[0])
 except Exception as err:
     if err == TypeError:
         print('FILE TYPE ERROR: File is not a PDF or is corrupted.')
@@ -224,19 +225,19 @@ except Exception as err:
         print('SIZE ERROR: Maximum file size is 10 MB')
     sys.exit()
 
-field_boxes, insurers_list, all_offsets = config_loader('config.json')
+field_boxes, insurers_list, all_offsets = load_config('config.json')
 
 # Insurer identification via OCR
 insurer, output = None, {}
-output['asegurador'] = field_ocr(
-        field_img_generator(image, 'asegurador', field_boxes, insurer),
+output['asegurador'] = ocr_field(
+        create_field_image(image, 'asegurador', field_boxes, insurer),
         field_boxes['asegurador']['ocr_config_mode'],
         insurer)
 insurer = output['asegurador']
 
 # Crop image to a delimited box to remove footer and blank spaces in the top
 # and sides
-image = img_cropper(image, insurer)
+image = crop_image(image, insurer)
 # Fields that do not follow their designated regex pattern
 needs_review_fields = []
 
@@ -246,13 +247,13 @@ for field in field_boxes.keys():
     if field == 'asegurador':
         continue
     # Field OCR
-    output[field] = field_ocr(
-            field_img_generator(image, field, field_boxes, insurer),
+    output[field] = ocr_field(
+            create_field_image(image, field, field_boxes, insurer),
             field_boxes[field]['ocr_config_mode'], insurer)
     try:
         # Attempt to validate the recognized field according to its
         # designated regex pattern
-        matched_text = regex_text_checker(
+        matched_text = check_ocr_text_w_regex(
                                     field_boxes[field]['regex_pattern'],
                                     output[field])
         if matched_text is not None:  # Successful validation
@@ -267,17 +268,17 @@ corrected_fields = []  # Reviewed fields that were corrected.
 # Perform some validations and corrections for recognized fields in need of
 # review.
 for field in needs_review_fields:
-    output[field] = field_linter(output[field], "empty")
+    output[field] = lint_field(output[field], "empty")
     if field in ('placa'):
-        output[field] = field_linter(output[field], "placa")
+        output[field] = lint_field(output[field], "placa")
     elif field in ('fecha_expedicion', 'fecha_inicio', 'fecha_vencimiento'):
-        output[field] = field_linter(output[field], "date")
+        output[field] = lint_field(output[field], "date")
     elif field in ('cap_ton', 'cilindraje-vatios', 'contrib_fosyga',
                    'prima_soat', 'tasa_runt', 'total_a_pagar'):
-        output[field] = field_linter(output[field], "numeric_string_format")
+        output[field] = lint_field(output[field], "numeric_string")
     # Check if the field now complies with its designated regex pattern
-    if regex_text_checker(field_boxes[field]['regex_pattern'],
-                          output[field]) is not None:
+    if check_ocr_text_w_regex(field_boxes[field]['regex_pattern'],
+                              output[field]) is not None:
         corrected_fields.append(field)
 
 
