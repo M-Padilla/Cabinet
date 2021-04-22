@@ -130,7 +130,7 @@
 				"default": [ 110, 950, 370, 120 ]
 			},
 			"ocr_config_mode": "--psm 6",
-			"regex_pattern": "^\\d+$|^\\d+(\\s\\-\\s)?\\d+$"
+			"regex_pattern": "^\\d+$|^\\d+(\\s[\\—\\-]\\s)?\\d+$"
 		},
 		"n_serial": {
 			"coords": {
@@ -172,7 +172,7 @@
 				"default": [ 1470, 950, 660, 120 ]
 			},
 			"ocr_config_mode": "--psm 6",
-			"regex_pattern": "[A-Z]+(\\s[A-Z]+)*"
+			"regex_pattern": "^[A-Z]{4,}(\\s[A-Z]+)*"
 		},
 		"tarifa": {
 			"coords": {
